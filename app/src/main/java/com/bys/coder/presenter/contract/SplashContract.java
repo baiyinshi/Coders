@@ -1,9 +1,12 @@
 package com.bys.coder.presenter.contract;
 
+import com.bys.coder.common.base.BaseModel;
 import com.bys.coder.common.base.BasePresenter;
 import com.bys.coder.common.base.BaseView;
 
 import java.util.List;
+
+import rx.Observable;
 
 /**
  * 作者：Bys on 2016/11/10 17:38
@@ -11,15 +14,17 @@ import java.util.List;
  */
 public interface SplashContract {
 
+
     interface View extends BaseView {
-        boolean isActive();
-
         void showContent(List<String> list);
-
-        void jumpToMain();
     }
 
-    interface Presenter extends BasePresenter {
-        void getSplashData();
+    interface Model extends BaseModel {
+        Observable<List<String>> getGirlList(int num, int page);
+    }
+
+    abstract class Presenter extends BasePresenter<View, Model> {
+
+        public abstract void getSplashData(int num, int page);
     }
 }

@@ -1,4 +1,4 @@
-package com.bys.coder.data.model;
+package com.bys.coder.data.bean;
 
 import android.graphics.drawable.Drawable;
 

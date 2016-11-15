@@ -32,7 +32,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
-import com.bys.coder.data.model.AppInfo;
+import com.bys.coder.data.bean.AppInfo;
 
 import java.io.File;
 import java.lang.reflect.Field;

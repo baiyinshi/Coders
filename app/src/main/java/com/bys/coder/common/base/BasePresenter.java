@@ -1,12 +1,29 @@
 package com.bys.coder.common.base;
 
-/**
- * Description: BasePresenter
- * Creator: yxc
- * date: 2016/9/21 10:42
- */
-public interface BasePresenter<T> {
-    void attachView(T view);
+import android.content.Context;
 
-    void detachView();
+import com.bys.coder.common.baserx.RxManager;
+
+
+/**
+ * des:基类presenter
+ * Created by Bys
+ * on 2016.07.11:55
+ */
+public abstract class BasePresenter<T,E>{
+    public Context mContext;
+    public E mModel;
+    public T mView;
+    public RxManager mRxManage = new RxManager();
+
+    public void setVM(T v, E m) {
+        this.mView = v;
+        this.mModel = m;
+        this.onStart();
+    }
+    public void onStart(){
+    };
+    public void onDestroy() {
+        mRxManage.clear();
+    }
 }

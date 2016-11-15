@@ -1,6 +1,7 @@
 package com.bys.coder.app;
 
 
+import com.antfortune.freeline.FreelineCore;
 import com.bys.coder.BuildConfig;
 import com.bys.coder.common.baseapp.BaseApplication;
 import com.bys.coder.data.db.RealmHelper;
@@ -40,6 +41,8 @@ public class App extends BaseApplication {
         super.onCreate();
         //初始化logger
         LogUtils.logInit(BuildConfig.DEBUG);
+        //初始化蚂蚁Freeline
+        FreelineCore.init(this);
         initNetConfig();
 //        initRealm();
     }

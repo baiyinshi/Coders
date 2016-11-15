@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:background="@color/white"
-             android:orientation="vertical">
+<com.bilibili.magicasakura.widgets.TintFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:orientation="vertical">
 
     <ImageView
         android:id="@+id/iv_welcome_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:scaleType="fitXY"/>
+        android:scaleType="fitXY"
+        />
+
+    <TextView
+        android:id="@+id/tv_welcome_time"
+        style="@style/title_tv_style"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:padding="10dp"
+        android:text="@string/app_name"/>
 
     <TextView
         android:id="@+id/tv_welcome_title"
@@ -20,4 +29,4 @@
         android:layout_margin="20dp"
         android:text="@string/app_name"/>
 
-</FrameLayout>
+</com.bilibili.magicasakura.widgets.TintFrameLayout>

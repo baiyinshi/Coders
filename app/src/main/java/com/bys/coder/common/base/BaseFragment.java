@@ -1,34 +1,78 @@
 package com.bys.coder.common.base;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bys.coder.R;
+import com.bys.coder.common.baserx.RxManager;
+import com.bys.coder.common.utils.ToastUitl;
+import com.bys.coder.common.widget.LoadingDialog;
 import com.bys.coder.utils.LogUtils;
+import com.bys.coder.utils.TUtil;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import me.yokeyword.fragmentation.SupportFragment;
 
 
 /**
  * Description: BaseFragment
- * Creator: yxc
+ * Creator: bys
  * date: 2016/9/7 11:40
  */
-public abstract class BaseFragment<T extends BasePresenter> extends SupportFragment {
+
+/***************
+ * 使用例子
+ *********************/
+//1.mvp模式
+//public class SampleFragment extends BaseFragment<NewsChanelPresenter, NewsChannelModel>implements NewsChannelContract.View {
+//    @Override
+//    public int getLayoutId() {
+//        return R.layout.activity_news_channel;
+//    }
+//
+//    @Override
+//    public void initPresenter() {
+//        mPresenter.setVM(this, mModel);
+//    }
+//
+//    @Override
+//    public void initView() {
+//    }
+//}
+//2.普通模式
+//public class SampleFragment extends BaseFragment {
+//    @Override
+//    public int getLayoutResource() {
+//        return R.layout.activity_news_channel;
+//    }
+//
+//    @Override
+//    public void initPresenter() {
+//    }
+//
+//    @Override
+//    public void initView() {
+//    }
+//}
+public abstract class BaseFragment<T extends BasePresenter, E extends BaseModel> extends Fragment {
 
     private final String TAG = getClass().getSimpleName();
-    protected T mPresenter;
     protected Context mContext;
-    protected View rootView;
     protected Unbinder unbinder;
     private boolean isViewPrepared; // 标识fragment视图已经初始化完毕
     private boolean hasFetchData; // 标识已经触发过懒加载数据
+
+    protected View rootView;
+    public T mPresenter;
+    public E mModel;
+    public RxManager mRxManager;
 
     @Override
     public void onAttach(Context mContext) {
@@ -51,16 +95,33 @@ public abstract class BaseFragment<T extends BasePresenter> extends SupportFragm
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         LogUtils.logd(getName() + "------>onCreateView");
         if (rootView == null) {
-            rootView = inflater.inflate(getLayout(), container, false);
+            rootView = inflater.inflate(getLayoutResource(), container, false);
         }
         ViewGroup parent = (ViewGroup) rootView.getParent();
         if (parent != null) {
             parent.removeView(rootView);
         }
         unbinder = ButterKnife.bind(this, rootView);
-        initView(inflater);
+        mPresenter = TUtil.getT(this, 0);
+        mModel = TUtil.getT(this, 1);
+        if (mPresenter != null) {
+            mPresenter.mContext = this.getActivity();
+        }
+        initPresenter();
+        initView(rootView, savedInstanceState);
         return rootView;
     }
+
+
+    //获取布局文件
+    protected abstract int getLayoutResource();
+
+    //简单页面无需mvp就不用管此方法即可,完美兼容各种实际场景的变通
+    public abstract void initPresenter();
+
+    //初始化view
+    protected abstract void initView(View view, Bundle savedInstanceState);
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -116,6 +177,9 @@ public abstract class BaseFragment<T extends BasePresenter> extends SupportFragm
         LogUtils.logd(getName() + "------>onDestroy");
         if (unbinder != null)
             unbinder.unbind();
+        if (mPresenter != null)
+            mPresenter.onDestroy();
+        mRxManager.clear();
     }
 
     @Override
@@ -153,8 +217,111 @@ public abstract class BaseFragment<T extends BasePresenter> extends SupportFragm
         return BaseFragment.class.getName();
     }
 
-    protected abstract int getLayout();
+    /**
+     * 通过Class跳转界面
+     **/
+    public void startActivity(Class<?> cls) {
+        startActivity(cls, null);
+    }
 
-    protected void initView(LayoutInflater inflater) {
+    /**
+     * 通过Class跳转界面
+     **/
+    public void startActivityForResult(Class<?> cls, int requestCode) {
+        startActivityForResult(cls, null, requestCode);
+    }
+
+    /**
+     * 含有Bundle通过Class跳转界面
+     **/
+    public void startActivityForResult(Class<?> cls, Bundle bundle,
+                                       int requestCode) {
+        Intent intent = new Intent();
+        intent.setClass(getActivity(), cls);
+        if (bundle != null) {
+            intent.putExtras(bundle);
+        }
+        startActivityForResult(intent, requestCode);
+    }
+
+    /**
+     * 含有Bundle通过Class跳转界面
+     **/
+    public void startActivity(Class<?> cls, Bundle bundle) {
+        Intent intent = new Intent();
+        intent.setClass(getActivity(), cls);
+        if (bundle != null) {
+            intent.putExtras(bundle);
+        }
+        startActivity(intent);
+    }
+
+
+    /**
+     * 开启加载进度条
+     */
+    public void startProgressDialog() {
+        LoadingDialog.showDialogForLoading(getActivity());
+    }
+
+    /**
+     * 开启加载进度条
+     *
+     * @param msg
+     */
+    public void startProgressDialog(String msg) {
+        LoadingDialog.showDialogForLoading(getActivity(), msg, true);
+    }
+
+    /**
+     * 停止加载进度条
+     */
+    public void stopProgressDialog() {
+        LoadingDialog.cancelDialogForLoading();
+    }
+
+
+    /**
+     * 短暂显示Toast提示(来自String)
+     **/
+    public void showShortToast(String text) {
+        ToastUitl.showShort(text);
+    }
+
+    /**
+     * 短暂显示Toast提示(id)
+     **/
+    public void showShortToast(int resId) {
+        ToastUitl.showShort(resId);
+    }
+
+    /**
+     * 长时间显示Toast提示(来自res)
+     **/
+    public void showLongToast(int resId) {
+        ToastUitl.showLong(resId);
+    }
+
+    /**
+     * 长时间显示Toast提示(来自String)
+     **/
+    public void showLongToast(String text) {
+        ToastUitl.showLong(text);
+    }
+
+
+    public void showToastWithImg(String text, int res) {
+        ToastUitl.showToastWithImg(text, res);
+    }
+
+    /**
+     * 网络访问错误提醒
+     */
+    public void showNetErrorTip() {
+        ToastUitl.showToastWithImg(getText(R.string.net_error).toString(), R.mipmap.icn_wifi_off);
+    }
+
+    public void showNetErrorTip(String error) {
+        ToastUitl.showToastWithImg(error, R.mipmap.icn_wifi_off);
     }
 }
